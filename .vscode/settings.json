@@ -1,0 +1,19 @@
+{
+    "files.exclude": {
+        "dist1": true,
+        "node_modules": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "eslint.format.enable": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "html"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+}

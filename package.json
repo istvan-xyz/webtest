@@ -1,0 +1,62 @@
+{
+    "name": "@istvan.xyz/webtest",
+    "version": "0.0.1",
+    "description": "Web test utility.",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc --declaration",
+        "prepare": "npm run build",
+        "postversion": "git push --tags && git push",
+        "lint": "eslint --ext ts,js --quiet ./src",
+        "test": "jest ./src"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/istvan-xyz/webtest.git"
+    },
+    "keywords": [
+        "web",
+        "test",
+        "browser",
+        "e2e"
+    ],
+    "author": "István Antal <istvan@antal.xyz>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/istvan-xyz/webtest/issues"
+    },
+    "homepage": "https://github.com/istvan-xyz/webtest#readme",
+    "dependencies": {
+        "mkdirp": "^1.0.3",
+        "playwright": "^0.11.1"
+    },
+    "devDependencies": {
+        "@babel/polyfill": "^7.8.7",
+        "@babel/preset-env": "^7.8.7",
+        "@babel/preset-typescript": "^7.8.3",
+        "@types/debug": "^4.1.5",
+        "@types/jest": "^25.1.4",
+        "@types/mkdirp": "^1.0.0",
+        "@types/node": "^13.9.0",
+        "@typescript-eslint/eslint-plugin": "^2.22.0",
+        "@typescript-eslint/eslint-plugin-tslint": "^2.22.0",
+        "@typescript-eslint/parser": "^2.22.0",
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb-base": "^14.0.0",
+        "eslint-plugin-import": "^2.20.1",
+        "jest": "^25.1.0",
+        "tslint": "^6.0.0",
+        "typescript": "^3.8.3"
+    },
+    "babel": {
+        "presets": [
+            "@babel/preset-env",
+            "@babel/preset-typescript"
+        ]
+    },
+    "jest": {
+        "setupFiles": [
+            "@babel/polyfill"
+        ]
+    }
+}
