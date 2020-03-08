@@ -17,8 +17,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: install required packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgbm-dev xvfb
     - run: npm install
     - run: npm run build --if-present
     - run: npm run lint
+    - run: npm test
       env:
         CI: true
