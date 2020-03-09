@@ -27,6 +27,18 @@ const stateMap = new Map<TestContext, TestState>();
 
 const reportsSetup: string[] = [];
 
+interface LaunchOptions {
+    headless?: boolean;
+    args?: string[];
+    devtools?: boolean;
+}
+
+let launchOptions: LaunchOptions = {};
+
+export const setLaunchOptions = (options: LaunchOptions) => {
+    launchOptions = options;
+};
+
 const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) => {
     const spec = jestTest(name, async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,9 +47,7 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
         const relativeTestFileDir = dirname(relativeTestFilePath);
         const absoluteTestFileDir = join(reportDir, relativeTestFileDir);
         await mkdirp(absoluteTestFileDir);
-        const browser = await chromium.launch({
-            // headless: false,
-        });
+        const browser = await chromium.launch(launchOptions);
         const browserContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
         const page = await browserContext.newPage();
         const context: TestContext = { page, browser: browserContext };
