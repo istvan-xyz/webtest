@@ -1,7 +1,8 @@
 import { chromium, Page, BrowserContext } from 'playwright';
-import * as mkdirp from 'mkdirp';
 import { dirname, join } from 'path';
 import { promises, readFileSync } from 'fs';
+
+const mkdirp = require('mkdirp');
 
 const { writeFile } = promises;
 
