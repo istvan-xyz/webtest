@@ -3,6 +3,13 @@ import { test, step } from '..';
 // eslint-disable-next-line no-undef
 jest.setTimeout(20000);
 
+/*
+setLaunchOptions({
+    headless: false,
+    devtools: true,
+});
+*/
+
 test('google search', async context => {
     const { page } = context;
     await step('open google', context, async () => {

@@ -2,6 +2,8 @@ import { chromium, Page, BrowserContext } from 'playwright';
 import { dirname, join } from 'path';
 import { promises, readFileSync } from 'fs';
 
+export { Page } from 'playwright';
+
 const mkdirp = require('mkdirp');
 
 const { writeFile } = promises;
@@ -50,6 +52,9 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
         const browser = await chromium.launch(launchOptions);
         const browserContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
         const page = await browserContext.newPage();
+        await page.setViewportSize({
+            width: 1440, height: 900,
+        });
         const context: TestContext = { page, browser: browserContext };
         const state = {
             reportContent: '',
