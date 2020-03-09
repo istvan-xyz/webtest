@@ -58,10 +58,6 @@ jobs:
           node-version: 13
           registry-url: https://npm.pkg.github.com/
           scope: '@istvan.xyz'
-        - name: install required packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install libgbm-dev xvfb
       - run: npm ci
       - run: npm publish --registry=https://npm.pkg.github.com/
         env:
