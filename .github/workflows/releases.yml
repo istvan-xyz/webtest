@@ -57,7 +57,8 @@ jobs:
         with:
           node-version: 13
           registry-url: https://npm.pkg.github.com/
-          scope: '@istvan.xyz'
+          scope: '@istvan-xyz'
+      - run: sed -i '' 's/istvan\.xyz/istvan-xyz/' package.json
       - run: npm ci
       - run: npm publish --registry=https://npm.pkg.github.com/
         env:
