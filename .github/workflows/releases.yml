@@ -16,6 +16,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 13
+      - name: install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgbm-dev xvfb
       - run: npm ci
       - run: npm test
       - name: Create Release
@@ -54,6 +58,10 @@ jobs:
 #          node-version: 13
 #          registry-url: https://npm.pkg.github.com/
 #          scope: '@istvan-antal'
+#        - name: install required packages
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install libgbm-dev xvfb
 #      - run: npm ci
 #      - run: npm publish --registry=https://npm.pkg.github.com/
 #        env:
