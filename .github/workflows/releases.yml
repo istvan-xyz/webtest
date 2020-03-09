@@ -48,21 +48,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
 
-#  publish-gpr:
-#    needs: create-release
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - uses: actions/setup-node@v1
-#        with:
-#          node-version: 13
-#          registry-url: https://npm.pkg.github.com/
-#          scope: '@istvan-antal'
-#        - name: install required packages
-#        run: |
-#          sudo apt-get update
-#          sudo apt-get install libgbm-dev xvfb
-#      - run: npm ci
-#      - run: npm publish --registry=https://npm.pkg.github.com/
-#        env:
-#          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  publish-gpr:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 13
+          registry-url: https://npm.pkg.github.com/
+          scope: '@istvan.xyz'
+        - name: install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgbm-dev xvfb
+      - run: npm ci
+      - run: npm publish --registry=https://npm.pkg.github.com/
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
