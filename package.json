@@ -4,7 +4,7 @@
     "description": "Web test utility.",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc --declaration",
+        "build": "tsc --declaration && cp ./src/report.html dist/",
         "prepare": "npm run build",
         "postversion": "git push --tags && git push",
         "lint": "eslint --ext ts,js --quiet ./src",
