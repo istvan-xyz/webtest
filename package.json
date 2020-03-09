@@ -1,6 +1,6 @@
 {
     "name": "@istvan.xyz/webtest",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "Web test utility.",
     "main": "dist/index.js",
     "scripts": {
