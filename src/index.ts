@@ -1,5 +1,5 @@
 import { chromium, Page, BrowserContext } from 'playwright';
-import mkdirp from 'mkdirp';
+import * as mkdirp from 'mkdirp';
 import { dirname, join } from 'path';
 import { promises, readFileSync } from 'fs';
 
