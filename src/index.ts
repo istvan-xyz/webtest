@@ -1,4 +1,6 @@
 import { chromium, Page, BrowserContext } from 'playwright';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { BrowserContextOptions } from 'playwright-core/lib/browserContext';
 import { dirname, join } from 'path';
 import { promises, readFileSync } from 'fs';
 
@@ -33,12 +35,19 @@ interface LaunchOptions {
     headless?: boolean;
     args?: string[];
     devtools?: boolean;
+    slowMo?: number;
 }
 
 let launchOptions: LaunchOptions = {};
 
 export const setLaunchOptions = (options: LaunchOptions) => {
     launchOptions = options;
+};
+
+let browserContextOptions: BrowserContextOptions = { viewport: { width: 1440, height: 900 } };
+
+export const setBrowserContextOptions = (options: BrowserContextOptions) => {
+    browserContextOptions = options;
 };
 
 const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) => {
@@ -50,7 +59,7 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
         const absoluteTestFileDir = join(reportDir, relativeTestFileDir);
         await mkdirp(absoluteTestFileDir);
         const browser = await chromium.launch(launchOptions);
-        const browserContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+        const browserContext = await browser.newContext(browserContextOptions);
         const page = await browserContext.newPage();
         await page.setViewportSize({
             width: 1440, height: 900,
