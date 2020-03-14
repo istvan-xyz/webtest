@@ -1,8 +1,9 @@
 import { chromium, Page, BrowserContext } from 'playwright';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BrowserContextOptions } from 'playwright-core/lib/browserContext';
-import { dirname, join } from 'path';
+import { dirname, join, parse } from 'path';
 import { promises, readFileSync } from 'fs';
+import { TestReportGenerator } from './report';
 
 export { Page } from 'playwright';
 
@@ -20,14 +21,8 @@ const template = readFileSync(join(__dirname, 'report.html')).toString();
 export interface TestContext {
     page: Page;
     browser: BrowserContext;
+    report: TestReportGenerator;
 }
-
-interface TestState {
-    currentStep?: string;
-    reportContent: string;
-}
-
-const stateMap = new Map<TestContext, TestState>();
 
 const reportsSetup: string[] = [];
 
@@ -50,6 +45,8 @@ export const setBrowserContextOptions = (options: BrowserContextOptions) => {
     browserContextOptions = options;
 };
 
+const testReports: TestReportGenerator[] = [];
+
 const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) => {
     const spec = jestTest(name, async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,23 +61,21 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
         await page.setViewportSize({
             width: 1440, height: 900,
         });
-        const context: TestContext = { page, browser: browserContext };
-        const state = {
-            reportContent: '',
+        const context: TestContext = {
+            page,
+            browser: browserContext,
+            report: new TestReportGenerator(page, browserContext),
         };
 
-        stateMap.set(context, state);
+        testReports.push(context.report);
 
-        state.reportContent += `<h1>${name}</h1>`;
+        context.report.addMainTitle(spec.getFullName());
 
         try {
             await fn(context);
         } catch (error) {
             // console.log('Failure detected, screenshotting...');
-            state.reportContent += '<h2>Error</h2>';
-            const screenshot = await page.screenshot();
-            state.reportContent += `<pre>${error.stack}</pre>`;
-            state.reportContent += `<img src="data:image/error.png;base64,${screenshot.toString('base64')}" />`;
+            await context.report.recordError(error);
             throw error;
         } finally {
             await browser.close();
@@ -94,38 +89,26 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
     const absoluteTestFileDir = join(reportDir, relativeTestFileDir);
     if (!reportsSetup.includes(testFilePath)) {
         reportsSetup.push(testFilePath);
+        const fileTestReport = join(absoluteTestFileDir, `${parse(testFilePath).name}.html`);
+
         // eslint-disable-next-line no-undef
         afterAll(async () => {
             await mkdirp(absoluteTestFileDir);
             await writeFile(
-                join(absoluteTestFileDir, 'index.html'),
+                fileTestReport,
                 template
                     .replace('<title>', `<title>${relativeTestFilePath}`)
-                    .replace('<body>', `<body>\n${Array.from(stateMap.values())
-                        .map(({ reportContent }) => reportContent).join('\n')}`),
+                    .replace('<body>', `<body>\n${
+                        (await Promise.all(testReports.map(async item => item.fetchContent()))).join('\n')}`),
             );
         });
     }
 };
 
-export const step = async (name: string, context: TestContext, fn: () => Promise<void>) => {
-    const state = stateMap.get(context);
-    if (!state) {
-        throw new Error('Failed to get state');
-    }
-
-    state.currentStep = name;
-    state.reportContent += `<h2>${name}</h2>`;
-    const screenshot = await context.page.screenshot();
-    state.reportContent += `<img src="data:image/${Math.random()}.png;base64,${screenshot.toString('base64')}" />`;
-
+export const step = async (name: string, { report }: TestContext, fn: () => Promise<void>) => {
+    await report.beginStep(name);
     const result = await fn();
-
-    const finishedScreenshot = await context.page.screenshot();
-    state.reportContent += `<img src="data:image/${Math.random()}.png;base64,${
-        finishedScreenshot.toString('base64')}" />`;
-    state.currentStep = undefined;
-
+    await report.endStep();
     return result;
 };
 

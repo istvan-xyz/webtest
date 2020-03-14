@@ -109,7 +109,7 @@ module.exports = {
         "@typescript-eslint/explicit-member-accessibility": [
             "error",
             {
-                "accessibility": "explicit"
+                "accessibility": "no-public"
             }
         ],
         "@typescript-eslint/no-empty-interface": [
