@@ -1,4 +1,4 @@
-import rimraf from 'rimraf';
+const rimraf = require('rimraf');
 
 const reportDir = `${process.cwd()}/report`;
 
