@@ -1,4 +1,4 @@
-import { join, parse } from 'path';
+import { join, parse, dirname } from 'path';
 import { promises, readFileSync } from 'fs';
 import { Page, BrowserContext } from 'playwright';
 
@@ -6,6 +6,8 @@ const mkdirp = require('mkdirp');
 
 const { writeFile } = promises;
 const template = readFileSync(join(__dirname, 'report.html')).toString();
+
+const reportDir = `${process.cwd()}/report`;
 
 export class TestReportGenerator {
     private reportContent = '';
@@ -57,9 +59,14 @@ export class TestFileGenerator {
     private readonly relativeTestFilePath: string;
     private tests: TestReportGenerator[] = [];
 
-    constructor(relativeTestFilePath: string, testFilePath: string) {
+    constructor(testFilePath: string) {
+        const relativeTestFilePath = testFilePath.replace(process.cwd(), '').substr(1);
+        const relativeTestFileDir = dirname(relativeTestFilePath);
+        const absoluteTestFileDir = join(reportDir, relativeTestFileDir);
+
+        const fileTestReport = join(absoluteTestFileDir, `${parse(testFilePath).name}.html`);
         this.relativeTestFilePath = relativeTestFilePath;
-        this.testFilePath = testFilePath;
+        this.testFilePath = fileTestReport;
     }
 
     addTest(test: TestReportGenerator) {

@@ -1,15 +1,12 @@
 import { chromium, Page, BrowserContext } from 'playwright';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BrowserContextOptions } from 'playwright-core/lib/browserContext';
-import { dirname, join, parse } from 'path';
 import { TestReportGenerator, TestFileGenerator } from './report';
 
 export { Page } from 'playwright';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const jestTest = (global as any).test;
-
-const reportDir = `${process.cwd()}/report`;
 
 export interface TestContext {
     page: Page;
@@ -71,14 +68,9 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const testFilePath = (spec as any).result.testPath;
-    const relativeTestFilePath = testFilePath.replace(process.cwd(), '').substr(1);
-    const relativeTestFileDir = dirname(relativeTestFilePath);
-    const absoluteTestFileDir = join(reportDir, relativeTestFileDir);
     if (!reportsSetup.includes(testFilePath)) {
         reportsSetup.push(testFilePath);
-
-        const fileTestReport = join(absoluteTestFileDir, `${parse(testFilePath).name}.html`);
-        const testReport = new TestFileGenerator(relativeTestFilePath, fileTestReport);
+        const testReport = new TestFileGenerator(testFilePath);
 
         // eslint-disable-next-line no-undef
         afterAll(async () => {
