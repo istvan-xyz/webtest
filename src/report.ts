@@ -1,4 +1,11 @@
+import { join, parse } from 'path';
+import { promises, readFileSync } from 'fs';
 import { Page, BrowserContext } from 'playwright';
+
+const mkdirp = require('mkdirp');
+
+const { writeFile } = promises;
+const template = readFileSync(join(__dirname, 'report.html')).toString();
 
 export class TestReportGenerator {
     private reportContent = '';
@@ -42,5 +49,31 @@ export class TestReportGenerator {
 
     async fetchContent() {
         return this.reportContent;
+    }
+}
+
+export class TestFileGenerator {
+    private readonly testFilePath: string;
+    private readonly relativeTestFilePath: string;
+    private tests: TestReportGenerator[] = [];
+
+    constructor(relativeTestFilePath: string, testFilePath: string) {
+        this.relativeTestFilePath = relativeTestFilePath;
+        this.testFilePath = testFilePath;
+    }
+
+    addTest(test: TestReportGenerator) {
+        this.tests.push(test);
+    }
+
+    async save() {
+        await mkdirp(parse(this.testFilePath).dir);
+        await writeFile(
+            this.testFilePath,
+            template
+                .replace('<title>', `<title>${this.relativeTestFilePath}`)
+                .replace('<body>', `<body>\n${
+                    (await Promise.all(this.tests.map(async item => item.fetchContent()))).join('\n')}`),
+        );
     }
 }
