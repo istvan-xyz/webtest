@@ -105,7 +105,9 @@ module.exports = {
             0
         ],
         "no-underscore-dangle": "error",
-        "@typescript-eslint/indent": "error",
+        "@typescript-eslint/indent": ["error", 4, {
+            "SwitchCase": 0
+        }],
         "@typescript-eslint/explicit-member-accessibility": [
             "error",
             {

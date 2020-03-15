@@ -1,86 +1,79 @@
-import { join, parse, dirname } from 'path';
-import { promises, readFileSync } from 'fs';
-import { Page, BrowserContext } from 'playwright';
+import { Page } from 'playwright';
+import { TestReportItem, TestReportStep, TestReportTest, TestReport } from './reportStructure';
+import generateTestReport from './generateTestReport';
 
-const mkdirp = require('mkdirp');
-
-const { writeFile } = promises;
-const template = readFileSync(join(__dirname, 'report.html')).toString();
-
-const reportDir = `${process.cwd()}/report`;
-
-export class TestReportGenerator {
-    private reportContent = '';
+export class TestCaseCollector {
     private readonly page: Page;
+    private readonly name: string;
+    private items: TestReportItem[] = [];
+    private currentStep?: TestReportStep;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    constructor(page: Page, browser: BrowserContext) {
+    constructor({ page, testName }: { page: Page; testName: string }) {
+        this.name = testName;
         this.page = page;
     }
 
-    addMainTitle(title: string) {
-        this.reportContent += `<h1>${title}</h1>`;
-    }
-
     async recordError(error: Error) {
-        this.reportContent += '<h2>Error</h2>';
         const screenshot = await this.page.screenshot();
-        this.reportContent += `<pre>${error.stack}</pre>`;
-        this.reportContent += `
-            <img style="max-width: 10rem;" src="data:image/error.png;base64,${screenshot.toString('base64')}" />
-        `;
+        if (this.currentStep) {
+            this.currentStep.error = error;
+            this.currentStep.errorScreenshot = screenshot.toString('base64');
+        } else {
+            this.items.push({
+                type: 'error',
+                error: `${error.message}\n${error.stack}`,
+                errorScreenshot: screenshot.toString('base64'),
+            });
+        }
     }
 
     async beginStep(name: string) {
-        this.reportContent += `<h2>${name}</h2>`;
+        if (this.currentStep) {
+            throw new Error('Step already exists');
+        }
         const screenshot = await this.page.screenshot();
-        this.reportContent += `
-            <img
-                style="max-width: 10rem;"
-                src="data:image/${Math.random()}.png;base64,${screenshot.toString('base64')}"
-            />
-        `;
+        this.currentStep = {
+            type: 'step',
+            name,
+            screenshotBefore: screenshot.toString('base64'),
+        };
+        this.items.push(this.currentStep);
     }
 
     async endStep() {
-        const finishedScreenshot = await this.page.screenshot();
-        this.reportContent += `
-            <img style="max-width: 10rem;" src="data:image/${Math.random()}.png;base64,${
-    finishedScreenshot.toString('base64')}" />
-        `;
+        this.currentStep!.screenshotAfter = (await this.page.screenshot()).toString('base64');
+        this.currentStep = undefined;
     }
 
-    async fetchContent() {
-        return this.reportContent;
+    getData(): TestReportTest {
+        return {
+            type: 'test',
+            name: this.name,
+            items: this.items,
+        };
     }
 }
 
-export class TestFileGenerator {
-    private readonly testFilePath: string;
+const generateReportData = (relativeTestFilePath: string, tests: TestCaseCollector[]): TestReport => ({
+    name: relativeTestFilePath,
+    items: tests.map(item => item.getData()),
+});
+
+export class TestFileDataCollector {
     private readonly relativeTestFilePath: string;
-    private tests: TestReportGenerator[] = [];
+    private tests: TestCaseCollector[] = [];
 
     constructor(testFilePath: string) {
         const relativeTestFilePath = testFilePath.replace(process.cwd(), '').substr(1);
-        const relativeTestFileDir = dirname(relativeTestFilePath);
-        const absoluteTestFileDir = join(reportDir, relativeTestFileDir);
-
-        const fileTestReport = join(absoluteTestFileDir, `${parse(testFilePath).name}.html`);
         this.relativeTestFilePath = relativeTestFilePath;
-        this.testFilePath = fileTestReport;
     }
 
-    addTest(test: TestReportGenerator) {
+    addTest(test: TestCaseCollector) {
         this.tests.push(test);
     }
 
     async save() {
-        await mkdirp(parse(this.testFilePath).dir);
-        await writeFile(
-            this.testFilePath,
-            template
-                .replace('<title>', `<title>${this.relativeTestFilePath}`)
-                .replace('<body>', `<body>\n${
-                    (await Promise.all(this.tests.map(async item => item.fetchContent()))).join('\n')}`),
-        );
+        const reportData = generateReportData(this.relativeTestFilePath, this.tests);
+        await generateTestReport(this.relativeTestFilePath, reportData);
     }
 }

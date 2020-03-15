@@ -1,7 +1,7 @@
 import { chromium, Page, BrowserContext } from 'playwright';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BrowserContextOptions } from 'playwright-core/lib/browserContext';
-import { TestReportGenerator, TestFileGenerator } from './report';
+import { TestCaseCollector, TestFileDataCollector } from './report';
 
 export { Page } from 'playwright';
 
@@ -11,7 +11,7 @@ const jestTest = (global as any).test;
 export interface TestContext {
     page: Page;
     browser: BrowserContext;
-    report: TestReportGenerator;
+    report: TestCaseCollector;
 }
 
 const reportsSetup: string[] = [];
@@ -35,7 +35,7 @@ export const setBrowserContextOptions = (options: BrowserContextOptions) => {
     browserContextOptions = options;
 };
 
-const testReports: TestReportGenerator[] = [];
+const testReports: TestCaseCollector[] = [];
 
 const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) => {
     const spec = jestTest(name, async () => {
@@ -48,12 +48,13 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
         const context: TestContext = {
             page,
             browser: browserContext,
-            report: new TestReportGenerator(page, browserContext),
+            report: new TestCaseCollector({
+                page,
+                testName: spec.getFullName(),
+            }),
         };
 
         testReports.push(context.report);
-
-        context.report.addMainTitle(spec.getFullName());
 
         try {
             await fn(context);
@@ -70,7 +71,7 @@ const browserTest = (name: string, fn: (context: TestContext) => Promise<void>) 
     const testFilePath = (spec as any).result.testPath;
     if (!reportsSetup.includes(testFilePath)) {
         reportsSetup.push(testFilePath);
-        const testReport = new TestFileGenerator(testFilePath);
+        const testReport = new TestFileDataCollector(testFilePath);
 
         // eslint-disable-next-line no-undef
         afterAll(async () => {
