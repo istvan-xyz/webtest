@@ -31,11 +31,9 @@ export class TestCaseCollector {
         if (this.currentStep) {
             throw new Error('Step already exists');
         }
-        const screenshot = await this.page.screenshot();
         this.currentStep = {
             type: 'step',
             name,
-            screenshotBefore: screenshot.toString('base64'),
         };
         this.items.push(this.currentStep);
     }

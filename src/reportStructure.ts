@@ -14,7 +14,6 @@ export type TestReportItem = TestReportStep | TestReportError;
 export interface TestReportStep {
     type: 'step';
     name: string;
-    screenshotBefore?: string;
     screenshotAfter?: string;
     error?: Error;
     errorScreenshot?: string;

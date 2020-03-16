@@ -36,14 +36,9 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
             case 'step':
                 reportContent += `
         <h3>${testItem.name}</h3>
-        ${testItem.screenshotBefore ? `
-        <img
-            style="max-width: 10rem;"
-            src="data:image/${Math.random()}.png;base64,${testItem.screenshotBefore}"
-        />
-        ` : ''}
         ${testItem.screenshotAfter ? `
         <img
+            class="thumbnail"
             style="max-width: 10rem;"
             src="data:image/${Math.random()}.png;base64,${testItem.screenshotAfter}"
         />
@@ -66,12 +61,27 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
         }
     }
 
+    /*
+    const header = `
+    <style>
+    </style>
+    `;
+    */
+
+    reportContent = `
+    <div class="sidebar">
+        ${reportContent}
+    </div>
+    <div class="main">
+    </div>
+    `;
+
     await writeFile(
         testReportFilePath,
         template
             .replace('<title>', `<title>${data.name}`)
             // eslint-disable-next-line max-len
-            .replace('</head>', '\n\n</head>')
+            // .replace('</head>', `\n${header}\n</head>`)
             .replace('<body>', `<body>\n${reportContent}\n`),
     );
 };

@@ -4,7 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-auto-rows: minmax(100px, auto);
+            grid-template-areas: 
+            "sidebar main main main main main main main"
+            "sidebar main main main main main main main"
+            "sidebar main main main main main main main";
+        }
+        
+        .sidebar {
+            grid-area: sidebar;
+            padding: 1rem;
+            border-right: 1px solid #CCC;
+        }
+
+        .main {
+            grid-area: main;
+            background-repeat: no-repeat;
+            background-position: top center;
+            background-size: contain;
+        }
+
+        .thumbnail {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <script>
+        const main = document.querySelector('.main');
+        document.querySelector('.sidebar').addEventListener('click', event => {
+            const target = event.target;
+            if (target.classList.contains('thumbnail')) {
+                main.style.backgroundImage = `url(${target.getAttribute('src')})`;
+            }
+        });
+
+        const lastThumbnail = Array.from(document.querySelectorAll('.sidebar .thumbnail')).slice(-1)[0];
+        main.style.backgroundImage = `url(${lastThumbnail.getAttribute('src')})`;
+    </script>
 </body>
 </html>
