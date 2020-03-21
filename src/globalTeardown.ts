@@ -1,5 +1,5 @@
 import { promises, readFileSync } from 'fs';
-import { join, parse } from 'path';
+import { join } from 'path';
 
 const { readdir, stat, writeFile } = promises;
 
