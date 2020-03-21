@@ -1,5 +1,5 @@
 import { promises, readFileSync } from 'fs';
-import { join } from 'path';
+import { join, parse } from 'path';
 
 const { readdir, stat, writeFile } = promises;
 
@@ -26,6 +26,22 @@ const walk = async (basePath: string, path = '') => {
     return result;
 };
 
+const hasError = (data: any) => {
+    const keys = Object.keys(data);
+    if (keys.includes('error')) {
+        return true;
+    }
+    for (const key of keys) {
+        if (typeof data[key] !== 'object' && !Array.isArray(data[key])) {
+            continue;
+        }
+        if (hasError(data[key])) {
+            return true;
+        }
+    }
+    return false;
+};
+
 export default async () => {
     const files = await walk(reportDir);
 
@@ -36,7 +52,22 @@ export default async () => {
             .replace('<body>', `<body>\n<ul>\n${
                 files
                     .filter(file => file.endsWith('.html'))
-                    .map(file => `<li><a href="${file}">${file}</a></li>`)
+                    .map(file => {
+                        const data = JSON.parse(readFileSync(
+                            join(
+                                reportDir,
+                                file.replace(/\.html$/g, '.json'),
+                            ),
+                        ).toString());
+                        const failure = hasError(data);
+                        return `
+    <li>
+        <a href="${file}"${failure ? ' class="failure"' : ''}>
+            ${file}
+            ${failure ? ' FAILED ' : ''}
+        </a>
+    </li>`;
+                    })
                     .join('\n')
             }\n</ul>`),
     );

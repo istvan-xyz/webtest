@@ -12,6 +12,7 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
     const testFilePathParts = parse(testFilePath);
     const testReportFileDir = join(reportDir, testFilePathParts.dir);
     const testReportFilePath = join(testReportFileDir, `${testFilePathParts.name}.html`);
+    const testReportMetaFilePath = join(testReportFileDir, `${testFilePathParts.name}.json`);
     await mkdirp(testReportFileDir);
     let reportContent = '';
 
@@ -24,7 +25,7 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
             case 'error':
                 reportContent += `
         <h3>Error</h3>
-        <pre>${testItem.error}</pre>
+        <pre class="failure">${testItem.error}</pre>
         ${testItem.errorScreenshot ? `
         <img
             style="max-width: 10rem;"
@@ -44,7 +45,7 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
         />
         ` : ''}
         ${testItem.error ? `
-        <pre>${testItem.error.stack}</pre>
+        <pre class="failure">${testItem.error.stack}</pre>
         ` : ''}
         ${testItem.errorScreenshot ? `
         <img
@@ -61,13 +62,6 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
         }
     }
 
-    /*
-    const header = `
-    <style>
-    </style>
-    `;
-    */
-
     reportContent = `
     <div class="sidebar">
         ${reportContent}
@@ -76,14 +70,20 @@ const generateTestReport = async (testFilePath: string, data: TestReport) => {
     </div>
     `;
 
-    await writeFile(
-        testReportFilePath,
-        template
-            .replace('<title>', `<title>${data.name}`)
+    await Promise.all([
+        writeFile(
+            testReportMetaFilePath,
+            JSON.stringify(data, null, 4),
+        ),
+        writeFile(
+            testReportFilePath,
+            template
+                .replace('<title>', `<title>${data.name}`)
             // eslint-disable-next-line max-len
             // .replace('</head>', `\n${header}\n</head>`)
-            .replace('<body>', `<body>\n${reportContent}\n`),
-    );
+                .replace('<body>', `<body>\n${reportContent}\n`),
+        ),
+    ]);
 };
 
 export default generateTestReport;

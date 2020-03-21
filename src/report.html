@@ -35,20 +35,39 @@
         .thumbnail {
             cursor: pointer;
         }
+
+        a, a:link, a:visited {
+            color: rgb(84, 84, 218);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .failure, a.failure {
+            color: rgb(192, 50, 50);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <script>
         const main = document.querySelector('.main');
-        document.querySelector('.sidebar').addEventListener('click', event => {
-            const target = event.target;
-            if (target.classList.contains('thumbnail')) {
-                main.style.backgroundImage = `url(${target.getAttribute('src')})`;
-            }
-        });
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.addEventListener('click', event => {
+                const target = event.target;
+                if (target.classList.contains('thumbnail')) {
+                    main.style.backgroundImage = `url(${target.getAttribute('src')})`;
+                }
+            });
 
-        const lastThumbnail = Array.from(document.querySelectorAll('.sidebar .thumbnail')).slice(-1)[0];
-        main.style.backgroundImage = `url(${lastThumbnail.getAttribute('src')})`;
+            const lastThumbnail = Array.from(document.querySelectorAll('.sidebar .thumbnail')).slice(-1)[0];
+            if (lastThumbnail) {
+                main.style.backgroundImage = `url(${lastThumbnail.getAttribute('src')})`;
+            }
+        }
     </script>
 </body>
 </html>
