@@ -1,6 +1,4 @@
-import { chromium, Page, BrowserContext } from 'playwright';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { BrowserContextOptions } from 'playwright-core/lib/browserContext';
+import { chromium, Page, BrowserContext, BrowserNewContextOptions } from 'playwright';
 import { TestCaseCollector, TestFileDataCollector } from './report';
 
 export { Page } from 'playwright';
@@ -29,9 +27,9 @@ export const setLaunchOptions = (options: LaunchOptions) => {
     launchOptions = options;
 };
 
-let browserContextOptions: BrowserContextOptions = { viewport: { width: 1440, height: 900 } };
+let browserContextOptions: BrowserNewContextOptions = { viewport: { width: 1440, height: 900 } };
 
-export const setBrowserContextOptions = (options: BrowserContextOptions) => {
+export const setBrowserContextOptions = (options: BrowserNewContextOptions) => {
     browserContextOptions = options;
 };
 
